@@ -22,7 +22,6 @@ APNS_SERVER_PORT = 2195
 FEEDBACK_SERVER_SANDBOX_HOSTNAME = "feedback.sandbox.push.apple.com"
 FEEDBACK_SERVER_HOSTNAME = "feedback.push.apple.com"
 FEEDBACK_SERVER_PORT = 2196
-FEEDBACK_SERVER_PORT = 2196
 MAX_CONNECTION_TIME = datetime.timedelta(minutes=60)
 
 app_ids = {}  # {'app_id': APNSService()}
@@ -59,7 +58,7 @@ class APNSClientContextFactory(ClientContextFactory):
                 'APNSClientContextFactory ssl_cert_file=%s' % ssl_cert_file)
         else:
             log.msg('APNSClientContextFactory ssl_cert_file={FROM_STRING}')
-        self.ctx = SSL.Context(SSL.SSLv3_METHOD)
+        self.ctx = SSL.Context(SSL.TLSv1_METHOD)
         if 'BEGIN CERTIFICATE' in ssl_cert_file:
             cer = crypto.load_certificate(crypto.FILETYPE_PEM, ssl_cert_file)
             pkey = crypto.load_privatekey(crypto.FILETYPE_PEM, ssl_cert_file)
@@ -203,7 +202,7 @@ class APNSService(service.Service):
 
     def write(self, notifications):
         "Connect to the APNS service and send notifications"
-	if self.factory: 
+	if self.factory:
             conn_time = datetime.datetime.now() - self.factory_connect_time
             if conn_time > MAX_CONNECTION_TIME:
             	log.msg('APNSService write (disconnecting based on max connection time)')
@@ -220,7 +219,7 @@ class APNSService(service.Service):
             self.factory.onFailureReceived = self.on_failure_received
             context = self.getContextFactory()
             reactor.connectSSL(server, port, self.factory, context)
-            self.factory_connect_time = datetime.datetime.now() 
+            self.factory_connect_time = datetime.datetime.now()
 
         client = self.factory.clientProtocol
         if client:
